@@ -1,0 +1,8 @@
+{
+	"consumer_key":"<fill in>",
+	"consumer_secret":"<fill in>", 
+	"oauth_token":"<fill in>",
+	"oauth_token_secret":"<fill in>",
+	"account": "<fill in>",
+	"curatorslist": "<fill in>"
+}
