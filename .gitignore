@@ -2,3 +2,4 @@
 .project
 *.pyc
 config.json
+.settings
