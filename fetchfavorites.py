@@ -25,13 +25,15 @@ def response_handler(resp, user_id):
     def body_handler(body):
         if resp.status_code == 200:
             favs['favorites'] = json.loads(body.to_string())
+        else:
+            print "Failed to fetch favorites: %s" % body.to_string()
         EventBus.send('log.event', "user.favorites.list.result")
         EventBus.send('user.favorites.list.result', json.dumps(favs))
             
 def fetch_favorites(message):
-    user_id = message.body
+    user = message.body
     consumer = Consumer(api_endpoint="https://api.twitter.com/", consumer_key=config['consumer_key'], consumer_secret=config['consumer_secret'], oauth_token=config['oauth_token'], oauth_token_secret=config['oauth_token_secret'])
-    consumer.get("/1.1/favorites/list.json", {'user_id': user_id, 'count': 20}, lambda resp: response_handler(resp, user_id))
+    consumer.get("/1.1/favorites/list.json", {'user_id': user['id'], 'count': 20}, lambda resp: response_handler(resp, user['id']))
 
 EventBus.register_handler('user.favorites.list', False, fetch_favorites)
 
