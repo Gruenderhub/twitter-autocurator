@@ -19,8 +19,15 @@ curators = []
 friends = []
 aday = datetime.now() - timedelta(1)
 
-def update_favorites(timer_id):
-    EventBus.send('log.event', "update_favorites")
+def update_favorites(timer_id=None):
+    if len(curators) == 0:
+        EventBus.send('log.event', "curators.list")
+        EventBus.send('curators.list', "")
+        return
+    if len(friends) == 0:
+        EventBus.send('log.event', "friends.list")
+        EventBus.send('friends.list', "")
+        return
     for curator in curators:
         EventBus.send('log.event', "user.favorites.list")
         EventBus.send('user.favorites.list', curator)
@@ -28,10 +35,12 @@ def update_favorites(timer_id):
 def curators_received(message):
     global curators
     curators = json.loads(message.body)
+    update_favorites()
     
 def friends_received(message):
     global friends
     friends = json.loads(message.body)
+    update_favorites()
         
 def favorites_received(message):
     data = json.loads(message.body)
@@ -39,7 +48,7 @@ def favorites_received(message):
         created_at = parse_date(tweet['created_at'])
         if created_at > aday: # Retweet is recent
             if tweet['user']['id'] in friends: # Tweet is by an account we follow
-                if tweet['text'][0] is not '@': # Tweet is not a reply
+                if tweet['text'][0] != '@': # Tweet is not a reply
                     # Of course there is: tweet['in_reply_to_screen_name'] but a reply may be a valid candidate for a retweet, as 
                     # an old school RT creates this type of tweet
                     EventBus.send('log.event', "retweet.create")
@@ -57,6 +66,3 @@ EventBus.send('friends.list', "")
 
 # Update favorites every n minutes
 vertx.set_periodic(1000 * 60 * 15, update_favorites)
-
-# Wait for first fetch
-vertx.set_timer(10000, update_favorites)
