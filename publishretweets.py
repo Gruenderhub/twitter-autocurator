@@ -39,8 +39,11 @@ def favorites_received(message):
         created_at = parse_date(tweet['created_at'])
         if created_at > aday: # Retweet is recent
             if tweet['user']['id'] in friends: # Tweet is by an account we follow
-                EventBus.send('log.event', "retweet.create")
-                EventBus.send("retweet.create", tweet['id'])
+                if tweet['text'][0] is not '@': # Tweet is not a reply
+                    # Of course there is: tweet['in_reply_to_screen_name'] but a reply may be a valid candidate for a retweet, as 
+                    # an old school RT creates this type of tweet
+                    EventBus.send('log.event', "retweet.create")
+                    EventBus.send("retweet.create", tweet['id'])
 
 EventBus.register_handler('curators.list.result', False, curators_received)
 EventBus.register_handler('friends.list.result', False, friends_received)
