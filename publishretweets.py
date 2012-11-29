@@ -17,6 +17,7 @@ config = vertx.config()
 
 curators = []
 friends = []
+retweets = []
 aday = datetime.now() - timedelta(1)
 
 def update_favorites(timer_id=None):
@@ -43,16 +44,26 @@ def friends_received(message):
     update_favorites()
         
 def favorites_received(message):
+    global retweets
     data = json.loads(message.body)
     for tweet in data['favorites']:
+        if tweet['id'] in retweets:
+            continue 
         created_at = parse_date(tweet['created_at'])
-        if created_at > aday: # Retweet is recent
-            if tweet['user']['id'] in friends: # Tweet is by an account we follow
-                if tweet['text'][0] != '@': # Tweet is not a reply
-                    # Of course there is: tweet['in_reply_to_screen_name'] but a reply may be a valid candidate for a retweet, as 
-                    # an old school RT creates this type of tweet
-                    EventBus.send('log.event', "retweet.create")
-                    EventBus.send("retweet.create", tweet['id'])
+        if created_at <= aday: # Retweet is recent
+            continue
+        if tweet['user']['id'] not in friends: 
+            # Tweet is not by an account we follow
+            continue
+        if tweet['text'][0] == '@': 
+            # Tweet is a reply
+            # Of course there is: tweet['in_reply_to_screen_name'] but a reply may be a valid candidate for a retweet, as 
+            # an old school RT creates this type of tweet
+            continue
+        # TODO: make this list persistent
+        retweets.append(tweet['id'])
+        EventBus.send('log.event', "retweet.create")
+        EventBus.send("retweet.create", tweet['id'])
 
 EventBus.register_handler('curators.list.result', False, curators_received)
 EventBus.register_handler('friends.list.result', False, friends_received)
