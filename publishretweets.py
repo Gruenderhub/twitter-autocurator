@@ -76,4 +76,6 @@ EventBus.send('log.event', "friends.list")
 EventBus.send('friends.list', "")
 
 # Update favorites every n minutes
-vertx.set_periodic(1000 * 60 * 15, update_favorites)
+publishretweets_interval = 20 if 'publishretweets_interval' not in config else int(config['publishretweets_interval'])
+vertx.set_periodic(1000 * 60 * publishretweets_interval, update_favorites)
+vertx.set_periodic(1000 * 60 * 10, lambda timer_id: EventBus.send('log.event', datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")))

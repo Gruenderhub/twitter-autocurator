@@ -4,5 +4,6 @@
 	"oauth_token":"<fill in>",
 	"oauth_token_secret":"<fill in>",
 	"account": "<fill in>",
-	"curatorslist": "<fill in>"
+	"curatorslist": "<fill in>",
+	"publishretweets_interval": 20
 }
